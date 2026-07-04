@@ -1,4 +1,5 @@
 export default function App() {
+
   const prompts = [
     {
       title: "Dam Design Expert",
@@ -18,10 +19,12 @@ export default function App() {
   ];
 
   return (
-    <div style={{
-      padding: "30px",
-      fontFamily: "Arial"
-    }}>
+    <div
+      style={{
+        padding: "30px",
+        fontFamily: "Arial"
+      }}
+    >
       <h1>🚀 Prompt Master 17</h1>
       <p>AI Prompt Engineering Platform</p>
 
@@ -31,9 +34,6 @@ export default function App() {
         <div
           key={i}
           style={{
-            border: "1px solid #ddd",
-            padding: "15px",
-            marginBottom: "15px",
             borderRadius: "10px"
           }}
         >
