@@ -1,0 +1,59 @@
+name: Prompt Master Final Cleaner
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove temporary folders
+        run: |
+          rm -rf temp_* || true
+          rm -rf .git-temp || true
+
+      - name: Remove duplicate filenames
+        run: |
+          find . -type f | while read f
+          do
+            base=$(basename "$f")
+            count=$(find . -type f -name "$base" | wc -l)
+            if [ "$count" -gt 1 ]; then
+              first=$(find . -type f -name "$base" | head -1)
+              find . -type f -name "$base" | tail -n +2 | xargs rm -f
+            fi
+          done
+
+      - name: Normalize filenames
+        run: |
+          find . -name "* *.md" | while read f
+          do
+            mv "$f" "$(echo $f | tr -s ' ')"
+          done
+
+      - name: Remove nested git folders
+        run: |
+          find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Create final report
+        run: |
+          echo "# Prompt Master 17 Final Report" > FINAL_REPORT.md
+          echo "" >> FINAL_REPORT.md
+          echo "Repository cleanup completed successfully." >> FINAL_REPORT.md
+          echo "" >> FINAL_REPORT.md
+          echo "Current structure:" >> FINAL_REPORT.md
+          find . >> FINAL_REPORT.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Final automatic cleanup and merge" || true
+          git push || true
