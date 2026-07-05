@@ -1,0 +1,80 @@
+name: Prompt Master App Builder
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create App.tsx
+        run: |
+          mkdir -p src
+
+          cat > src/App.tsx << 'EOF'
+          export default function App() {
+            const prompts = [
+              {
+                title: "Dam Design Expert",
+                category: "Engineering",
+                description: "Professional dam engineering prompt"
+              },
+              {
+                title: "Prompt Generator",
+                category: "AI",
+                description: "Generate professional prompts"
+              },
+              {
+                title: "Marketing Expert",
+                category: "Business",
+                description: "Marketing and sales prompts"
+              },
+              {
+                title: "GIS & Map3D",
+                category: "Spatial",
+                description: "3D GIS prompts"
+              }
+            ];
+
+            return (
+              <div style={{
+                background:"#0f172a",
+                minHeight:"100vh",
+                color:"white",
+                padding:"30px",
+                fontFamily:"Arial"
+              }}>
+                <h1>Prompt Master 17</h1>
+                <h3>AI Prompt Engineering Platform</h3>
+
+                {prompts.map((p,i)=>(
+                  <div key={i}
+                    style={{
+                      background:"#1e293b",
+                      padding:"20px",
+                      margin:"20px 0",
+                      borderRadius:"12px"
+                    }}>
+                    <h2>{p.title}</h2>
+                    <p>{p.category}</p>
+                    <p>{p.description}</p>
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          EOF
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add src/App.tsx
+          git commit -m "Auto build App.tsx" || true
+          git push
