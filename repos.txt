@@ -1,0 +1,5 @@
+https://github.com/eissaalbothigi-cell/Prompt-master-17.git            core
+https://github.com/eissaalbothigi-cell/prompt-_master-engine.git      engine
+https://github.com/eissaalbothigi-cell/Prompet-Master-17.git          archive/pm17-v1
+https://github.com/eissaalbothigi-cell/Prompet--Master--17.git        archive/pm17-v2
+https://github.com/eissaalbothigi-cell/PM17.Ai-_Suite.git             archive/suite
