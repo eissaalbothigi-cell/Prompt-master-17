@@ -1,0 +1,70 @@
+name: Prompt Master Auto Rebuilder
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clean old merge files
+        run: |
+          rm -rf engine || true
+          rm -rf archive || true
+          rm -rf temp_* || true
+          rm -f MERGE_REPORT.md || true
+          rm -f DUPLICATES_REPORT.md || true
+
+      - name: Create structure
+        run: |
+          mkdir -p engine
+          mkdir -p archive/old1
+          mkdir -p archive/old2
+
+      - name: Clone repositories
+        run: |
+          git clone https://github.com/eissaalbothigi-cell/prompt-_master-engine.git temp_engine || true
+          git clone https://github.com/eissaalbothigi-cell/Prompet-Master-17.git temp_old1 || true
+          git clone https://github.com/eissaalbothigi-cell/Prompet--Master--17.git temp_old2 || true
+
+      - name: Remove git metadata
+        run: |
+          find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Merge repositories
+        run: |
+          cp -rf temp_engine/* engine/ 2>/dev/null || true
+          cp -rf temp_old1/* archive/old1/ 2>/dev/null || true
+          cp -rf temp_old2/* archive/old2/ 2>/dev/null || true
+
+      - name: Remove duplicates
+        run: |
+          find . -type f | sort | uniq > files.txt
+
+      - name: Create report
+        run: |
+          echo "# Prompt Master Merge Report" > MERGE_REPORT.md
+          echo "" >> MERGE_REPORT.md
+          echo "Merge completed successfully" >> MERGE_REPORT.md
+          date >> MERGE_REPORT.md
+
+      - name: Commit
+        run: |
+          git init
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Automatic professional merge" || true
+
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          
