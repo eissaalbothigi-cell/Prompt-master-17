@@ -1,0 +1,64 @@
+name: Prompt Master Auto Merger
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Main Repository
+        uses: actions/checkout@v4
+
+      - name: Clone Prompt Master Engine
+        run: |
+          git clone https://github.com/eissaalbothigi-cell/prompt-_master-engine.git temp_engine || true
+
+      - name: Clone Prompt Master Old 1
+        run: |
+          git clone https://github.com/eissaalbothigi-cell/Prompet-Master-17.git temp_old1 || true
+
+      - name: Clone Prompt Master Old 2
+        run: |
+          git clone https://github.com/eissaalbothigi-cell/Prompet--Master--17.git temp_old2 || true
+
+      - name: Create Structure
+        run: |
+          mkdir -p engine
+          mkdir -p archive/old1
+          mkdir -p archive/old2
+
+      - name: Remove Git Metadata
+        run: |
+          rm -rf temp_engine/.git || true
+          rm -rf temp_old1/.git || true
+          rm -rf temp_old2/.git || true
+
+      - name: Move Files
+        run: |
+          cp -r temp_engine/* engine/ 2>/dev/null || true
+          cp -r temp_old1/* archive/old1/ 2>/dev/null || true
+          cp -r temp_old2/* archive/old2/ 2>/dev/null || true
+
+      - name: Remove Duplicate Files
+        run: |
+          find . -type f | sort | uniq
+
+      - name: Generate Report
+        run: |
+          echo "# Merge Report" > MERGE_REPORT.md
+          echo "Merged repositories successfully." >> MERGE_REPORT.md
+          find . >> MERGE_REPORT.md
+
+      - name: Commit Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Automatic merge of Prompt Master repositories" || true
+          git push
+          
