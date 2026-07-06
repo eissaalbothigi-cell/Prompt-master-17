@@ -1,0 +1,8 @@
+{
+  "name":"Prompt Master Engine",
+  "version":"1.0.0",
+  "provider":"Prompt Master 17",
+  "supabase":true,
+  "github":true,
+  "status":"active"
+}
