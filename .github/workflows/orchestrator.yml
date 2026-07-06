@@ -1,0 +1,73 @@
+name: Prompt Master 17 Orchestrator
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+env:
+  SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+jobs:
+
+  orchestrate:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Environment
+        run: |
+          echo "VITE_SUPABASE_URL=${SUPABASE_URL}" > .env
+          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${SUPABASE_KEY}" >> .env
+
+      - name: Create Prompt Library
+        run: |
+          mkdir -p public/library
+
+          cat > public/library/library.json << EOF
+          {
+            "name":"Prompt Master Engine",
+            "version":"1.0.0",
+            "provider":"Prompt Master 17",
+            "supabase":true,
+            "github":true,
+            "status":"active"
+          }
+          EOF
+
+      - name: Verify Supabase
+        run: |
+          curl \
+          -H "apikey:${SUPABASE_KEY}" \
+          ${SUPABASE_URL}/rest/v1/
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-master-build
+          path: dist/
+
+      - name: Commit Changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add .
+
+          git commit -m "PM17 orchestrator sync" || echo "No changes"
+
+          git push
