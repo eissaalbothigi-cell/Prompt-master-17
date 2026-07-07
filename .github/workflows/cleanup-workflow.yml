@@ -1,0 +1,44 @@
+name: Prompt Master Recovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Show Repository
+        run: |
+          pwd
+          echo "===== ROOT ====="
+          ls -lah
+          echo "===== FILES ====="
+          find . -maxdepth 3
+
+      - name: Remove Build Artifacts
+        run: |
+          rm -rf node_modules || true
+          rm -rf dist || true
+
+      - name: Remove Wrong Files
+        run: |
+          rm -f package.jsonpackage.json || true
+          rm -f "Restore original Bolt package.json" || true
+
+      - name: Detect Duplicate Names
+        run: |
+          find . -type f | sed 's|.*/||' | sort | uniq -d > duplicate-report.txt
+          cat duplicate-report.txt || true
+
+      - name: Upload Duplicate Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: duplicate-report
+          path: duplicate-report.txt
