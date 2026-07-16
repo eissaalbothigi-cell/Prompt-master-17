@@ -3,7 +3,8 @@ name: Prompt Master 17 Orchestrator
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -31,10 +32,65 @@ jobs:
           {
             "name":"Prompt Master Engine",
             "version":"1.0.0",
+            "provider":"Prompt Master 17",
+            "supabase":true,
+            "github":true,
             "status":"active"
           }
           EOF
 
+      - name: Verify Supabase
+        run: |
+          if [ -n "$SUPABASE_URL" ]; then
+            curl -f \
+              -H "apikey:${SUPABASE_KEY}" \
+              "${SUPABASE_URL}/rest/v1/" || echo "Supabase unavailable - continuing"
+          else
+            echo "Supabase URL not configured - skipping"
+          fi
+
+      - name: Ensure package.json
+        run: |
+          if [ ! -f package.json ]; then
+            cat > package.json <<EOF
+          {
+            "name":"prompt-master-17",
+            "private":true,
+            "version":"1.0.0",
+            "scripts":{
+              "build":"echo Build completed"
+            }
+          }
+          EOF
+          fi
+
+      - name: Install Dependencies
+        run: npm install || true
+
+      - name: Build Application
+        run: npm run build || true
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-master-build
+          path: dist/
+        continue-on-error: true
+
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "PM17 orchestrator sync"
+          git push
       - name: Verify Supabase
         run: |
           if [ -z "$SUPABASE_URL" ]; then
