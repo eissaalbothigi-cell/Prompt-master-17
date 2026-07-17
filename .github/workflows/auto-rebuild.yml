@@ -1,40 +1,42 @@
-name: Prompt Master Auto Rebuilder
+- name: Clone repositories
+  run: |
+    clone_with_retry() {
+      local url=$1
+      local target=$2
+      local attempts=3
+      local count=1
+      while [ $count -le $attempts ]; do
+        if git clone --depth 1 --single-branch "$url" "$target" 2>/dev/null; then
+          echo "Cloned: ${url##*/}"
+          return 0
+        fi
+        echo "Retry $count/$attempts: ${url##*/}"
+        count=$((count + 1))
+        sleep 3
+      done
+      echo "Failed: ${url##*/}"
+      return 1
+    }
+    clone_with_retry "https://github.com/eissaalbothigi-cell/Prompet-Master-17.git" "old1"
+    clone_with_retry "https://github.com/eissaalbothigi-cell/Prompet--Master--17.git" "old2"
 
-on:
-  workflow_dispatch:
+- name: Remove git metadata from cloned repos
+  run: |
+    if [ -d "old1" ]; then rm -rf old1/.git 2>/dev/null || true; fi
+    if [ -d "old2" ]; then rm -rf old2/.git 2>/dev/null || true; fi
+    find . -name ".DS_Store" -delete 2>/dev/null || true
+    find . -name "Thumbs.db" -delete 2>/dev/null || true
 
-permissions:
-  contents: write
-
-jobs:
-  rebuild:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Clean
-        run: |
-          rm -rf old1 old2 archive engine temp_* || true
-          rm -f MERGE_REPORT.md DUPLICATES_REPORT.md || true
-
-      - name: Clone Sources
-        run: |
-          git clone --depth=1 https://github.com/eissaalbothigi-cell/Prompt-master-17.git old1 || true
-
-      - name: Merge Files
-        run: |
-          rsync -a old1/ ./ --exclude=.git || true
-
-      - name: Ensure package.json
-        run: |
-          if [ ! -f package.json ]; then
+- name: Merge repositories
+  run: |
+    if [ -d "old1" ]; then
+      rsync -av --ignore-existing old1/ . 2>/dev/null || true
+      echo "Merged old1"
+    fi
+    if [ -d "old2" ]; then
+      rsync -av --ignore-existing old2/ . 2>/dev/null || true
+      echo "Merged old2"
+    fi          if [ ! -f package.json ]; then
           cat > package.json <<EOF
           {
             "name":"prompt-master-17",
